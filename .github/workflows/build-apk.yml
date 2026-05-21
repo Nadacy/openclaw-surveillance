@@ -21,13 +21,21 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          generate-job-summary: false
 
-      - name: Generate Gradle wrapper
+      - name: Install Gradle & Create project
         run: |
+          # Install Gradle
+          curl -sL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          export PATH="/tmp/gradle-8.7/bin:$PATH"
+          
+          mkdir -p app/src/main/res/values
+
+          # Generate Gradle wrapper
           gradle wrapper --gradle-version 8.7
 
-      - name: Create Android project structure
-        run: |
           mkdir -p app/src/main/res/values
 
           # settings.gradle.kts
