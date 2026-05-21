@@ -19,6 +19,14 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-34 build-tools;34.0.0'
+
+      - name: Set Android SDK path
+        run: echo "ANDROID_HOME=$ANDROID_HOME" && echo "sdk.dir=$ANDROID_HOME" > local.properties
+
       - name: Download Gradle wrapper JAR
         run: |
           curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar \
