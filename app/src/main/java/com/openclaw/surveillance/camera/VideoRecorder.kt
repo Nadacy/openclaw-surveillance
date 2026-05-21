@@ -42,42 +42,40 @@ class VideoRecorder {
         outputFile = File(outputDir, "surveillance_${System.currentTimeMillis()}.mp4")
         startTimeMs = System.currentTimeMillis()
 
-        val mediaStoreOutput = FileOutputOptions.Builder(outputFile!!).build()
+        val pendingRecording = videoCapture.output
+            .prepareRecording(outputFile!!)
 
-        val recording = videoCapture.output
-            .prepareRecording(context = null, mediaStoreOutput)  // context not needed for file output
-            .apply {
-                if (includeAudio) {
-                    withAudioEnabled()
-                }
-            }
-            .start(executor) { recordEvent ->
-                when (recordEvent) {
-                    is VideoRecordEvent.Finalize -> {
-                        val durationMs = System.currentTimeMillis() - startTimeMs
-                        if (recordEvent.hasError()) {
-                            Log.e(TAG, "Video recording error: ${recordEvent.error}")
-                            onResult(RecordResult(
-                                success = false,
-                                error = "Recording error: ${recordEvent.error}"
-                            ))
-                        } else {
-                            val base64 = fileToBase64(outputFile!!)
-                            onResult(RecordResult(
-                                success = true,
-                                base64 = base64,
-                                filePath = outputFile?.absolutePath,
-                                durationMs = durationMs,
-                                hasAudio = includeAudio
-                            ))
-                        }
+        val recording = (if (includeAudio) {
+            pendingRecording.withAudioEnabled()
+        } else {
+            pendingRecording
+        }).start(executor, java.util.function.Consumer { recordEvent: VideoRecordEvent ->
+            when (recordEvent) {
+                is VideoRecordEvent.Finalize -> {
+                    val durationMs = System.currentTimeMillis() - startTimeMs
+                    if (recordEvent.hasError()) {
+                        Log.e(TAG, "Video recording error: ${recordEvent.error}")
+                        onResult(RecordResult(
+                            success = false,
+                            error = "Recording error: ${recordEvent.error}"
+                        ))
+                    } else {
+                        val base64 = fileToBase64(outputFile!!)
+                        onResult(RecordResult(
+                            success = true,
+                            base64 = base64,
+                            filePath = outputFile?.absolutePath,
+                            durationMs = durationMs,
+                            hasAudio = includeAudio
+                        ))
                     }
-                    is VideoRecordEvent.Status -> {
-                        Log.d(TAG, "Recording status: ${recordEvent.recordingStats}")
-                    }
-                    else -> {}
                 }
+                is VideoRecordEvent.Status -> {
+                    Log.d(TAG, "Recording status: ${recordEvent.recordingStats}")
+                }
+                else -> {}
             }
+        })
 
         activeRecording = recording
         Log.i(TAG, "Recording started: ${outputFile?.absolutePath}")

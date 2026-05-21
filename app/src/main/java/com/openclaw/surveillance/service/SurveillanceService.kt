@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.Build
-import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.openclaw.surveillance.camera.CameraManager
@@ -35,7 +34,7 @@ class SurveillanceService : androidx.lifecycle.LifecycleService() {
     lateinit var screenDimController: ScreenDimController
     lateinit var commandHandler: CommandHandler
 
-    override fun onBind(intent: Intent?): IBinder = LocalBinder()
+    // LifecycleService provides onBind; use it directly
 
     override fun onCreate() {
         super.onCreate()
