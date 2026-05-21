@@ -31,8 +31,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          generate-job-summary: false
 
       - name: Generate wrapper
         run: |
@@ -43,6 +41,13 @@ jobs:
       - name: Create app project
         run: |
           mkdir -p app/src/main/java app/src/main/res/values
+
+          # Enable AndroidX
+          cat > gradle.properties << 'EOF'
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          org.gradle.jvmargs=-Xmx2048m
+          EOF
 
           cat > app/build.gradle.kts << 'BEOF'
           plugins {
