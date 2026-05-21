@@ -24,19 +24,14 @@ jobs:
         with:
           generate-job-summary: false
 
-      - name: Install Gradle & Create project
+      - name: Install Gradle
         run: |
-          # Install Gradle
           curl -sL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
-          export PATH="/tmp/gradle-8.7/bin:$PATH"
-          
-          mkdir -p app/src/main/res/values
+          echo "/tmp/gradle-8.7/bin" >> $GITHUB_PATH
 
-          # Generate Gradle wrapper
-          gradle wrapper --gradle-version 8.7
-
-          mkdir -p app/src/main/res/values
+      - name: Create Android project
+        run: |
 
           # settings.gradle.kts
           cat > settings.gradle.kts << 'EOF'
@@ -145,12 +140,15 @@ jobs:
           EOF
 
           # strings.xml
-          cat > app/src/main/res/values/strings.xml << 'EOF'
+          cat > app/src/main/res/values/strings.xml << 'STREOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <string name="app_name">OpenClaw Surveillance</string>
           </resources>
-          EOF
+          STREOF
+
+      - name: Generate Gradle wrapper
+        run: gradle wrapper --gradle-version 8.7
 
       - name: Copy source files
         run: |
