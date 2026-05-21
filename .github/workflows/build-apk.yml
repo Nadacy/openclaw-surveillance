@@ -29,24 +29,16 @@ jobs:
           # Install required SDK components
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" 2>&1 | tail -5
 
-      - name: Download Gradle wrapper JAR
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          generate-job-summary: false
+
+      - name: Generate wrapper
         run: |
-          echo "Checking built-in wrapper..."
-          if [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ $(stat -c%s gradle/wrapper/gradle-wrapper.jar 2>/dev/null || echo 0) -lt 1000 ]; then
-            echo "Downloading gradle-wrapper.jar..."
-            curl -sL --retry 5 --retry-delay 10 \
-              "https://services.gradle.org/distributions/gradle-8.7-bin.zip" -o /tmp/gradle-bin.zip
-            unzip -q -j /tmp/gradle-bin.zip "*/lib/gradle-wrapper-*.jar" -d gradle/wrapper/
-            mv gradle/wrapper/gradle-wrapper-*.jar gradle/wrapper/gradle-wrapper.jar 2>/dev/null || true
-            # Fallback: download direct from raw.githubusercontent
-            if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-              curl -sL --retry 10 --retry-delay 30 \
-                "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" \
-                -o gradle/wrapper/gradle-wrapper.jar
-            fi
-          fi
+          gradle wrapper --gradle-version 8.7
           ls -la gradle/wrapper/gradle-wrapper.jar
-          echo "JAR size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
+          echo "Wrapper JAR ready"
 
       - name: Create app project
         run: |
@@ -109,17 +101,6 @@ jobs:
           find app/src/main/java -name "*.kt" -type f | sort
           echo "=== Project root ==="
           ls -la
-
-      - name: Generate gradlew
-        run: |
-          cat > gradlew << 'GSEOF'
-          #!/bin/sh
-          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-          APP_HOME="$(dirname "$SCRIPT_DIR")"
-          CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
-          exec java -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
-          GSEOF
-          chmod +x gradlew
 
       - name: Build APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
