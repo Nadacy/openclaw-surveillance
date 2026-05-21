@@ -1,11 +1,12 @@
 package com.openclaw.surveillance.camera
 
+import android.content.Context
 import android.util.Base64
 import android.util.Log
 import androidx.camera.video.*
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.util.concurrent.Executors
 
 /**
  * 录像+录音模块
@@ -30,6 +31,7 @@ class VideoRecorder {
     private var activeRecording: Recording? = null
     private var outputFile: File? = null
     private var startTimeMs: Long = 0L
+    private val executor = Executors.newSingleThreadExecutor()
 
     fun startRecording(
         videoCapture: VideoCapture<Recorder>,
@@ -49,7 +51,7 @@ class VideoRecorder {
                     withAudioEnabled()
                 }
             }
-            .start(ContextCompat.getMainExecutor(null) ?: Runnable::run) { recordEvent ->
+            .start(executor) { recordEvent ->
                 when (recordEvent) {
                     is VideoRecordEvent.Finalize -> {
                         val durationMs = System.currentTimeMillis() - startTimeMs
