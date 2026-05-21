@@ -20,22 +20,24 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: 'platforms;android-34 build-tools;34.0.0'
-
-      - name: Set Android SDK path
-        run: echo "ANDROID_HOME=$ANDROID_HOME" && echo "sdk.dir=$ANDROID_HOME" > local.properties
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          # Install required SDK components
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" 2>&1 | tail -5
 
       - name: Download Gradle wrapper JAR
         run: |
-          curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar \
+          curl -sL --retry 3 https://services.gradle.org/distributions/gradle-8.7-bin.zip \
+            -o /dev/null  # verify connectivity
+          curl -sL --retry 3 https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar \
             -o gradle/wrapper/gradle-wrapper.jar
 
       - name: Create app project
         run: |
-          chmod +x gradlew 2>/dev/null || true
-
           mkdir -p app/src/main/java app/src/main/res/values
 
           cat > app/build.gradle.kts << 'BEOF'
@@ -111,6 +113,7 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: openclaw-surveillance
