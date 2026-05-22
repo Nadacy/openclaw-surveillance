@@ -52,7 +52,7 @@ class VideoRecorder {
             pendingRecording.withAudioEnabled()
         } else {
             pendingRecording
-        }).start(executor, java.util.function.Consumer { recordEvent: VideoRecordEvent ->
+        }).start(executor, androidx.core.util.Consumer { recordEvent: VideoRecordEvent ->
             when (recordEvent) {
                 is VideoRecordEvent.Finalize -> {
                     val durationMs = System.currentTimeMillis() - startTimeMs
