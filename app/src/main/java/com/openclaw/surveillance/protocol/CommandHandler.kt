@@ -153,6 +153,7 @@ class CommandHandler(private val service: SurveillanceService) {
     fun onSurveillanceStart(cameraId: String) {
         Log.i(TAG, "Recording started on $cameraId")
         videoRecorder.startRecording(
+            context = service,
             videoCapture = when (cameraId) {
                 "front" -> service.cameraManager.frontVideoCapture!!
                 else -> service.cameraManager.rearVideoCapture!!

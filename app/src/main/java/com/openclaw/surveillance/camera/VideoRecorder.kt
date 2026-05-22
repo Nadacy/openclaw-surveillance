@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Base64
 import android.util.Log
 import androidx.camera.video.*
+import androidx.camera.video.FileOutputOptions
 import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.Executors
@@ -34,6 +35,7 @@ class VideoRecorder {
     private val executor = Executors.newSingleThreadExecutor()
 
     fun startRecording(
+        context: Context,
         videoCapture: VideoCapture<Recorder>,
         outputDir: File,
         includeAudio: Boolean = true,
@@ -42,8 +44,9 @@ class VideoRecorder {
         outputFile = File(outputDir, "surveillance_${System.currentTimeMillis()}.mp4")
         startTimeMs = System.currentTimeMillis()
 
+        val fileOutputOptions = FileOutputOptions.Builder(outputFile!!).build()
         val pendingRecording = videoCapture.output
-            .prepareRecording(outputFile!!)
+            .prepareRecording(context, fileOutputOptions)
 
         val recording = (if (includeAudio) {
             pendingRecording.withAudioEnabled()
