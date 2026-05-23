@@ -77,6 +77,8 @@ jobs:
               implementation("com.google.mlkit:face-detection:16.1.7")
               implementation("androidx.core:core-ktx:1.13.1")
               implementation("androidx.lifecycle:lifecycle-service:2.8.2")
+              implementation("androidx.appcompat:appcompat:1.7.0")
+              implementation("com.google.android.material:material:1.12.0")
               implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
           }
           BEOF
@@ -93,11 +95,26 @@ jobs:
               <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
               <uses-feature android:name="android.hardware.camera" android:required="true" />
               <application android:allowBackup="true" android:supportsRtl="true">
+                  <activity android:name=".MainActivity"
+                      android:exported="true"
+                      android:label="@string/app_name">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
                   <service android:name=".service.SurveillanceService"
                       android:exported="false"
                       android:foregroundServiceType="camera" />
               </application>
           </manifest>
+          EOF
+
+          cat > app/src/main/res/values/strings.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">智能监控</string>
+          </resources>
           EOF
 
       - name: Verify source files
